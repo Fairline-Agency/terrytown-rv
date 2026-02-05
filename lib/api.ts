@@ -221,3 +221,25 @@ export async function fetchTypes(): Promise<string[]> {
 
   return Array.from(types).sort();
 }
+
+export async function fetchUnitsByIds(ids: number[]): Promise<InventoryUnit[]> {
+  if (ids.length === 0) return [];
+
+  // Build filter string for multiple IDs
+  const idFilters = ids
+    .map((id, index) => `filters[$and][0][$or][${index}][id][$eq]=${id}`)
+    .join("&");
+
+  const url = `${BASE_URL}/inventory/?${idFilters}&company[0]=${COMPANY_ID}&withUnitData=1&pageSize=${ids.length}`;
+
+  const response = await fetch(url, {
+    next: { revalidate: 300 },
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  const data: InventoryResponse = await response.json();
+  return data.data;
+}

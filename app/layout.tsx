@@ -5,6 +5,7 @@ import { FavoritesProvider } from "@/context/FavoritesContext";
 import { CompareProvider } from "@/context/CompareContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { CompareBar } from "@/components/features/CompareBar";
 import "./globals.css";
 
 const inter = Inter({
@@ -37,6 +38,7 @@ export default function RootLayout({
               <Header />
               <main className="flex-grow">{children}</main>
               <Footer />
+              <CompareBar />
             </CompareProvider>
           </FavoritesProvider>
         </QueryProvider>
