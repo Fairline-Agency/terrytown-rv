@@ -1,6 +1,7 @@
 // components/layout/Footer.tsx
 
 import Link from "next/link";
+import Image from "next/image";
 import { Phone, Mail, MapPin, Facebook, Instagram, Youtube } from "lucide-react";
 
 const quickLinks = [
@@ -35,7 +36,15 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Contact Info */}
           <div>
-            <h3 className="font-heading font-bold text-xl mb-4">Terry Town RV</h3>
+            <Link href="/" className="inline-block mb-4">
+              <Image
+                src="/logo.png"
+                alt="Terry Town RV"
+                width={160}
+                height={53}
+                className="h-12 w-auto brightness-0 invert"
+              />
+            </Link>
             <p className="text-gray-300 mb-4">
               The World&apos;s Largest Indoor RV Showroom
             </p>

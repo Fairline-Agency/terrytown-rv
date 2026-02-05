@@ -4,7 +4,7 @@ import { Suspense, useState, useCallback, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { SlidersHorizontal, X } from "lucide-react";
-import { fetchInventory, fetchMakes } from "@/lib/api";
+import { fetchInventory, fetchAvailableFilters } from "@/lib/api";
 import { FilterParams } from "@/lib/types";
 import { FilterPanel } from "@/components/inventory/FilterPanel";
 import { InventoryGrid } from "@/components/inventory/InventoryGrid";
@@ -72,12 +72,19 @@ function InventoryContent() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Fetch makes for filter panel
-  const { data: makes = [] } = useQuery({
-    queryKey: ["makes"],
-    queryFn: fetchMakes,
+  // Fetch available filter options from API
+  const { data: availableFilters } = useQuery({
+    queryKey: ["availableFilters"],
+    queryFn: fetchAvailableFilters,
     staleTime: 1000 * 60 * 30, // 30 minutes
   });
+
+  const filterOptions = {
+    makes: availableFilters?.makes || [],
+    types: availableFilters?.types || [],
+    conditions: availableFilters?.conditions || [],
+    slideoutOptions: availableFilters?.slideoutOptions || [],
+  };
 
   // Update URL with new filters
   const updateFilters = useCallback(
@@ -199,7 +206,7 @@ function InventoryContent() {
             <div className="sticky top-4">
               <FilterPanel
                 filters={filters}
-                availableFilters={{ makes }}
+                availableFilters={filterOptions}
                 onFilterChange={handleFilterChange}
                 onClearFilters={handleClearFilters}
               />
@@ -288,7 +295,7 @@ function InventoryContent() {
           >
             <FilterPanel
               filters={filters}
-              availableFilters={{ makes }}
+              availableFilters={filterOptions}
               onFilterChange={handleFilterChange}
               onClearFilters={handleClearFilters}
               onClose={() => setIsMobileFilterOpen(false)}

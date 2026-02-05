@@ -15,45 +15,42 @@ function buildFilterString(params: FilterParams): string {
   );
   filterIndex++;
 
-  // Search/keyword filter
+  // Search/keyword filter - search in stock_number and title
   if (params.search) {
     filters.push(
       `filters[$and][${filterIndex}][$or][0][stock_number][$containsi]=${encodeURIComponent(params.search)}`
     );
     filters.push(
-      `filters[$and][${filterIndex}][$or][1][unit_make][name][$containsi]=${encodeURIComponent(params.search)}`
-    );
-    filters.push(
-      `filters[$and][${filterIndex}][$or][2][unit_model][name][$containsi]=${encodeURIComponent(params.search)}`
+      `filters[$and][${filterIndex}][$or][1][title][$containsi]=${encodeURIComponent(params.search)}`
     );
     filterIndex++;
   }
 
-  // Type filter (classification name)
-  if (params.type && params.type.length > 0) {
-    params.type.forEach((t, i) => {
-      filters.push(
-        `filters[$and][${filterIndex}][$or][${i}][unit_classification][name][$eqi]=${encodeURIComponent(t)}`
-      );
-    });
-    filterIndex++;
-  }
-
-  // Make filter
-  if (params.make && params.make.length > 0) {
-    params.make.forEach((m, i) => {
-      filters.push(
-        `filters[$and][${filterIndex}][$or][${i}][unit_make][name][$eqi]=${encodeURIComponent(m)}`
-      );
-    });
-    filterIndex++;
-  }
-
-  // Condition filter
+  // Condition filter - API supports this via condition[name][$in]
   if (params.condition && params.condition.length > 0) {
     params.condition.forEach((c, i) => {
       filters.push(
-        `filters[$and][${filterIndex}][$or][${i}][condition][$eqi]=${encodeURIComponent(c)}`
+        `filters[$and][${filterIndex}][condition][name][$in][${i}]=${encodeURIComponent(c)}`
+      );
+    });
+    filterIndex++;
+  }
+
+  // Type filter - uses camelCase: unitClassification
+  if (params.type && params.type.length > 0) {
+    params.type.forEach((t, i) => {
+      filters.push(
+        `filters[$and][${filterIndex}][unitClassification][name][$in][${i}]=${encodeURIComponent(t)}`
+      );
+    });
+    filterIndex++;
+  }
+
+  // Make filter - uses camelCase: unitMake
+  if (params.make && params.make.length > 0) {
+    params.make.forEach((m, i) => {
+      filters.push(
+        `filters[$and][${filterIndex}][unitMake][name][$in][${i}]=${encodeURIComponent(m)}`
       );
     });
     filterIndex++;
@@ -139,30 +136,27 @@ export async function fetchInventory(
   params: FilterParams = {}
 ): Promise<InventoryResponse> {
   const page = params.page || 1;
-  const pageSize = params.pageSize || 12;
+  const perPage = params.pageSize || 12;
 
   const filterString = buildFilterString(params);
   const sortString = buildSortString(params.sort);
 
-  const url = `${BASE_URL}/inventory/?${filterString}&${sortString}&company[0]=${COMPANY_ID}&withUnitData=1&page=${page}&pageSize=${pageSize}`;
+  // All filtering done by API
+  const url = `${BASE_URL}/inventory/?${filterString}&${sortString}&company[0]=${COMPANY_ID}&withUnitData=1&page=${page}&per_page=${perPage}`;
 
-  const response = await fetch(url, {
-    next: { revalidate: 300 }, // Cache for 5 minutes
-  });
-
+  const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`API error: ${response.status}`);
   }
 
-  return response.json();
+  const data: InventoryResponse = await response.json();
+  return data;
 }
 
 export async function fetchUnitById(id: number): Promise<InventoryUnit | null> {
   const url = `${BASE_URL}/inventory/?filters[$and][0][id][$eq]=${id}&company[0]=${COMPANY_ID}&withUnitData=1`;
 
-  const response = await fetch(url, {
-    next: { revalidate: 300 },
-  });
+  const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error(`API error: ${response.status}`);
@@ -173,11 +167,9 @@ export async function fetchUnitById(id: number): Promise<InventoryUnit | null> {
 }
 
 export async function fetchFeaturedInventory(): Promise<InventoryUnit[]> {
-  const url = `${BASE_URL}/inventory/?filters[$and][0][displayOnWebsite][$eq]=true&filters[$and][1][web_settings][featured][$eq]=true&sort[0]=received_date:desc&company[0]=${COMPANY_ID}&withUnitData=1&pageSize=12`;
+  const url = `${BASE_URL}/inventory/?filters[$and][0][displayOnWebsite][$eq]=true&filters[$and][1][web_settings][featured][$eq]=true&sort[0]=received_date:desc&company[0]=${COMPANY_ID}&withUnitData=1&per_page=12`;
 
-  const response = await fetch(url, {
-    next: { revalidate: 300 },
-  });
+  const response = await fetch(url);
 
   if (!response.ok) {
     // Fallback to regular inventory if no featured
@@ -230,11 +222,9 @@ export async function fetchUnitsByIds(ids: number[]): Promise<InventoryUnit[]> {
     .map((id, index) => `filters[$and][0][$or][${index}][id][$eq]=${id}`)
     .join("&");
 
-  const url = `${BASE_URL}/inventory/?${idFilters}&company[0]=${COMPANY_ID}&withUnitData=1&pageSize=${ids.length}`;
+  const url = `${BASE_URL}/inventory/?${idFilters}&company[0]=${COMPANY_ID}&withUnitData=1&per_page=${ids.length}`;
 
-  const response = await fetch(url, {
-    next: { revalidate: 300 },
-  });
+  const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error(`API error: ${response.status}`);
@@ -242,4 +232,95 @@ export async function fetchUnitsByIds(ids: number[]): Promise<InventoryUnit[]> {
 
   const data: InventoryResponse = await response.json();
   return data.data;
+}
+
+export interface AvailableFilterOptions {
+  types: string[];
+  makes: string[];
+  conditions: string[];
+  yearRange: { min: number; max: number };
+  priceRange: { min: number; max: number };
+  sleepsRange: { min: number; max: number };
+  slideoutOptions: number[];
+}
+
+export async function fetchAvailableFilters(): Promise<AvailableFilterOptions> {
+  // Fetch all items to get available filter options
+  const url = `${BASE_URL}/inventory/?filters[$and][0][displayOnWebsite][$eq]=true&company[0]=${COMPANY_ID}&withUnitData=1&per_page=500`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`API error: ${res.status}`);
+  }
+  const response: InventoryResponse = await res.json();
+
+  const types = new Set<string>();
+  const makes = new Set<string>();
+  const conditions = new Set<string>();
+  const slideouts = new Set<number>();
+  let minYear = Infinity;
+  let maxYear = 0;
+  let minPrice = Infinity;
+  let maxPrice = 0;
+  let minSleeps = Infinity;
+  let maxSleeps = 0;
+
+  response.data.forEach((unit) => {
+    // Types
+    if (unit.unit_classification?.name) {
+      types.add(unit.unit_classification.name);
+    }
+
+    // Makes
+    if (unit.unit_make?.name) {
+      makes.add(unit.unit_make.name);
+    }
+
+    // Conditions
+    const condition = typeof unit.condition === 'object' ? unit.condition?.name : unit.condition;
+    if (condition) {
+      conditions.add(condition);
+    }
+
+    // Year range
+    if (unit.year) {
+      minYear = Math.min(minYear, unit.year);
+      maxYear = Math.max(maxYear, unit.year);
+    }
+
+    // Price range
+    if (unit.price_current) {
+      minPrice = Math.min(minPrice, unit.price_current);
+      maxPrice = Math.max(maxPrice, unit.price_current);
+    }
+
+    // Sleeps range
+    if (unit.max_sleeping_count) {
+      minSleeps = Math.min(minSleeps, unit.max_sleeping_count);
+      maxSleeps = Math.max(maxSleeps, unit.max_sleeping_count);
+    }
+
+    // Slideouts
+    if (unit.number_of_slideouts !== null && unit.number_of_slideouts !== undefined) {
+      slideouts.add(unit.number_of_slideouts);
+    }
+  });
+
+  return {
+    types: Array.from(types).sort(),
+    makes: Array.from(makes).sort(),
+    conditions: Array.from(conditions).sort(),
+    yearRange: {
+      min: minYear === Infinity ? 2000 : minYear,
+      max: maxYear === 0 ? new Date().getFullYear() : maxYear
+    },
+    priceRange: {
+      min: minPrice === Infinity ? 0 : minPrice,
+      max: maxPrice === 0 ? 500000 : maxPrice
+    },
+    sleepsRange: {
+      min: minSleeps === Infinity ? 1 : minSleeps,
+      max: maxSleeps === 0 ? 10 : maxSleeps
+    },
+    slideoutOptions: Array.from(slideouts).sort((a, b) => a - b),
+  };
 }

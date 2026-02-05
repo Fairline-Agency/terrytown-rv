@@ -79,6 +79,7 @@ export interface InventoryUnit {
   // Media
   display_image: string | null;
   media: MediaItem[];
+  images: ImageItem[];
 
   // Descriptions
   inventory_unit_descriptions: UnitDescription[];
@@ -103,6 +104,14 @@ export interface MediaItem {
   url: string;
   type: string;
   order: number;
+}
+
+export interface ImageItem {
+  url: string;
+  color: string | null;
+  collection_name: string;
+  placeholder_url: string;
+  responsive_image_url: string[];
 }
 
 export interface UnitDescription {

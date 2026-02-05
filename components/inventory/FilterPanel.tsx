@@ -9,8 +9,9 @@ interface FilterPanelProps {
   filters: FilterParams;
   availableFilters: {
     makes: string[];
-    types?: string[];
-    conditions?: string[];
+    types: string[];
+    conditions: string[];
+    slideoutOptions: number[];
   };
   onFilterChange: (key: keyof FilterParams, value: unknown) => void;
   onClearFilters: () => void;
@@ -18,26 +19,11 @@ interface FilterPanelProps {
   isMobile?: boolean;
 }
 
-const RV_TYPES = [
-  "Travel Trailer",
-  "Fifth Wheel",
-  "Toy Hauler",
-  "Class A",
-  "Class B",
-  "Class C",
-  "Pop-Up Camper",
-  "Truck Camper",
-];
-
-const CONDITIONS = ["New", "Used"];
-
-const SLIDEOUT_OPTIONS = [
-  { label: "No Slideouts", value: 0 },
-  { label: "1 Slideout", value: 1 },
-  { label: "2 Slideouts", value: 2 },
-  { label: "3 Slideouts", value: 3 },
-  { label: "4+ Slideouts", value: 4 },
-];
+function getSlideoutLabel(value: number): string {
+  if (value === 0) return "No Slideouts";
+  if (value === 1) return "1 Slideout";
+  return `${value} Slideouts`;
+}
 
 interface CollapsibleSectionProps {
   title: string;
@@ -205,43 +191,47 @@ export function FilterPanel({
         </CollapsibleSection>
 
         {/* RV Type */}
-        <CollapsibleSection title="RV Type">
-          <div className="space-y-2">
-            {RV_TYPES.map((type) => (
-              <label key={type} className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={filters.type?.includes(type) || false}
-                  onChange={(e) => handleTypeChange(type, e.target.checked)}
-                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-                />
-                <span className="text-sm text-gray-700">{type}</span>
-              </label>
-            ))}
-          </div>
-        </CollapsibleSection>
+        {availableFilters.types.length > 0 && (
+          <CollapsibleSection title="RV Type">
+            <div className="space-y-2">
+              {availableFilters.types.map((type: string) => (
+                <label key={type} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.type?.includes(type) || false}
+                    onChange={(e) => handleTypeChange(type, e.target.checked)}
+                    className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                  />
+                  <span className="text-sm text-gray-700">{type}</span>
+                </label>
+              ))}
+            </div>
+          </CollapsibleSection>
+        )}
 
         {/* Condition */}
-        <CollapsibleSection title="Condition">
-          <div className="space-y-2">
-            {CONDITIONS.map((condition) => (
-              <label
-                key={condition}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={filters.condition?.includes(condition) || false}
-                  onChange={(e) =>
-                    handleConditionChange(condition, e.target.checked)
-                  }
-                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-                />
-                <span className="text-sm text-gray-700">{condition}</span>
-              </label>
-            ))}
-          </div>
-        </CollapsibleSection>
+        {availableFilters.conditions.length > 0 && (
+          <CollapsibleSection title="Condition">
+            <div className="space-y-2">
+              {availableFilters.conditions.map((condition: string) => (
+                <label
+                  key={condition}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={filters.condition?.includes(condition) || false}
+                    onChange={(e) =>
+                      handleConditionChange(condition, e.target.checked)
+                    }
+                    className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                  />
+                  <span className="text-sm text-gray-700">{condition}</span>
+                </label>
+              ))}
+            </div>
+          </CollapsibleSection>
+        )}
 
         {/* Make */}
         {availableFilters.makes.length > 0 && (
@@ -353,26 +343,28 @@ export function FilterPanel({
         </CollapsibleSection>
 
         {/* Slideouts */}
-        <CollapsibleSection title="Slideouts" defaultOpen={false}>
-          <div className="space-y-2">
-            {SLIDEOUT_OPTIONS.map((option) => (
-              <label
-                key={option.value}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={filters.slideouts?.includes(option.value) || false}
-                  onChange={(e) =>
-                    handleSlideoutChange(option.value, e.target.checked)
-                  }
-                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-                />
-                <span className="text-sm text-gray-700">{option.label}</span>
-              </label>
-            ))}
-          </div>
-        </CollapsibleSection>
+        {availableFilters.slideoutOptions.length > 0 && (
+          <CollapsibleSection title="Slideouts" defaultOpen={false}>
+            <div className="space-y-2">
+              {availableFilters.slideoutOptions.map((slideoutCount: number) => (
+                <label
+                  key={slideoutCount}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={filters.slideouts?.includes(slideoutCount) || false}
+                    onChange={(e) =>
+                      handleSlideoutChange(slideoutCount, e.target.checked)
+                    }
+                    className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                  />
+                  <span className="text-sm text-gray-700">{getSlideoutLabel(slideoutCount)}</span>
+                </label>
+              ))}
+            </div>
+          </CollapsibleSection>
+        )}
       </div>
 
       {/* Apply Button (Mobile Only) */}

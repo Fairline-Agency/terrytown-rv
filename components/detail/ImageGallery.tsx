@@ -5,24 +5,24 @@
 import { useState, useCallback } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { MediaItem } from "@/lib/types";
+import { ImageItem } from "@/lib/types";
 import { getImageUrl, cn } from "@/lib/utils";
 
 interface ImageGalleryProps {
   displayImage: string | null;
-  media: MediaItem[];
+  images: ImageItem[];
   title: string;
 }
 
 export function ImageGallery({
   displayImage,
-  media,
+  images: imageItems,
   title,
 }: ImageGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  // Combine display_image with media array images
+  // Combine display_image with images array
   const allImages: string[] = [];
 
   // Add display image first if it exists
@@ -30,15 +30,12 @@ export function ImageGallery({
     allImages.push(displayImage);
   }
 
-  // Add media images (filter for images only, avoid duplicates)
-  media
-    .filter((item) => item.type === "image" || item.type === "photo")
-    .sort((a, b) => a.order - b.order)
-    .forEach((item) => {
-      if (!allImages.includes(item.url)) {
-        allImages.push(item.url);
-      }
-    });
+  // Add images from the images array (avoid duplicates)
+  imageItems.forEach((item) => {
+    if (item.url && !allImages.includes(item.url)) {
+      allImages.push(item.url);
+    }
+  });
 
   // If no images at all, use placeholder
   const hasImages = allImages.length > 0;

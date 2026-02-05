@@ -3,6 +3,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Search, Heart, GitCompare } from "lucide-react";
 import { TopBar } from "./TopBar";
 import { Navigation } from "./Navigation";
@@ -21,9 +22,14 @@ export function Header() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
-            <div className="font-heading font-bold text-2xl text-primary">
-              Terry Town RV
-            </div>
+            <Image
+              src="/logo.png"
+              alt="Terry Town RV"
+              width={180}
+              height={60}
+              className="h-12 w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}

@@ -128,7 +128,7 @@ export default async function UnitDetailPage({ params }: PageProps) {
             {/* Image Gallery */}
             <ImageGallery
               displayImage={unit.display_image}
-              media={unit.media || []}
+              images={unit.images || []}
               title={unitTitle}
             />
 
