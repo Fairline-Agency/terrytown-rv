@@ -7,11 +7,12 @@ import { Search, Heart, GitCompare } from "lucide-react";
 import { TopBar } from "./TopBar";
 import { Navigation } from "./Navigation";
 import { MobileNav } from "./MobileNav";
+import { useFavorites } from "@/context/FavoritesContext";
+import { useCompare } from "@/context/CompareContext";
 
 export function Header() {
-  // Placeholder until context is set up in Task 3.3
-  const favorites: number[] = [];
-  const compareItems: number[] = [];
+  const { favorites } = useFavorites();
+  const { compareItems } = useCompare();
 
   return (
     <header className="sticky top-0 z-40 bg-white shadow-sm">
