@@ -13,7 +13,7 @@ import {
   Check,
 } from "lucide-react";
 import { fetchUnitById, fetchInventory } from "@/lib/api";
-import { formatPrice, calculateSavings, formatNumber } from "@/lib/utils";
+import { formatPrice, calculateSavings, formatNumber, getConditionName } from "@/lib/utils";
 import { ImageGallery } from "@/components/detail/ImageGallery";
 import { SpecsTable } from "@/components/detail/SpecsTable";
 import { ContactForm } from "@/components/detail/ContactForm";
@@ -38,7 +38,7 @@ export async function generateMetadata({
   }
 
   const title = `${unit.year} ${unit.unit_make?.name} ${unit.unit_model?.name} | Terry Town RV`;
-  const description = `Shop the ${unit.year} ${unit.unit_make?.name} ${unit.unit_model?.name} ${unit.condition} ${unit.unit_classification?.name}. ${
+  const description = `Shop the ${unit.year} ${unit.unit_make?.name} ${unit.unit_model?.name} ${getConditionName(unit.condition)} ${unit.unit_classification?.name}. ${
     unit.max_sleeping_count ? `Sleeps ${unit.max_sleeping_count}.` : ""
   } ${unit.vehicle_body_length ? `${Math.round(unit.vehicle_body_length)}ft long.` : ""} Starting at ${formatPrice(unit.price_current)}.`;
 
@@ -273,7 +273,7 @@ export default async function UnitDetailPage({ params }: PageProps) {
                 {/* Condition & Stock */}
                 <div className="flex items-center gap-2 mb-4">
                   <span className="bg-primary text-white text-xs font-bold px-2 py-1 rounded uppercase">
-                    {unit.condition}
+                    {getConditionName(unit.condition)}
                   </span>
                   <span className="text-sm text-gray-500">
                     Stock #{unit.stock_number}

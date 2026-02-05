@@ -5,7 +5,9 @@ export interface InventoryUnit {
   stock_number: string;
   vin: string;
   year: number;
-  condition: string;
+  condition: {
+    name: string;
+  } | string;
   lot_status: string;
 
   // Pricing

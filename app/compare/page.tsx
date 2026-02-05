@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useCompare } from "@/context/CompareContext";
 import { fetchUnitsByIds } from "@/lib/api";
 import { InventoryUnit } from "@/lib/types";
-import { formatPrice, formatNumber, getImageUrl, cn } from "@/lib/utils";
+import { formatPrice, formatNumber, getImageUrl, getConditionName, cn } from "@/lib/utils";
 
 interface SpecRowProps {
   label: string;
@@ -236,7 +236,7 @@ export default function ComparePage() {
                 <SpecRow
                   label="Condition"
                   units={sortedUnits}
-                  getValue={(u) => u.condition}
+                  getValue={(u) => getConditionName(u.condition)}
                 />
                 <SpecRow
                   label="Type"

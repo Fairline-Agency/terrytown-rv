@@ -67,3 +67,9 @@ export function getImageUrl(url: string | null, fallback?: string): string {
   }
   return url;
 }
+
+export function getConditionName(condition: { name: string } | string | null | undefined): string {
+  if (!condition) return "Unknown";
+  if (typeof condition === "string") return condition;
+  return condition.name || "Unknown";
+}

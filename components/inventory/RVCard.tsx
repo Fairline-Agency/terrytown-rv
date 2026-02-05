@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, GitCompare, Ruler, Users, Layers } from "lucide-react";
 import { InventoryUnit } from "@/lib/types";
-import { formatPrice, calculateSavings, getImageUrl, cn } from "@/lib/utils";
+import { formatPrice, calculateSavings, getImageUrl, getConditionName, cn } from "@/lib/utils";
 import { useFavorites } from "@/context/FavoritesContext";
 import { useCompare } from "@/context/CompareContext";
 
@@ -52,7 +52,7 @@ export function RVCard({ unit }: RVCardProps) {
           )}
           {unit.condition && (
             <span className="bg-primary text-white text-xs font-bold px-2 py-1 rounded">
-              {unit.condition}
+              {getConditionName(unit.condition)}
             </span>
           )}
         </div>
