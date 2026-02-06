@@ -9,7 +9,7 @@ export function HeroBanner() {
     <section className="relative min-h-[500px] md:min-h-[600px] text-white overflow-hidden">
       {/* Background Image */}
       <Image
-        src="/hero-showroom.png"
+        src="/company/branding/hero-showroom.png"
         alt="Terry Town RV Showroom"
         fill
         className="object-cover"

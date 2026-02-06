@@ -4,8 +4,6 @@
 
 A Next.js 14 website clone for Terry Town RV dealership, using the Coast Technology Inventory API for real-time inventory data.
 
-**Live Site:** https://king-prawn-app-uyb2y.ondigitalocean.app
-**Repository:** https://github.com/Fairline-Agency/terrytown-rv
 
 ---
 

@@ -23,7 +23,7 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
             <Image
-              src="/logo.png"
+              src="/company/branding/logo.png"
               alt="Terry Town RV"
               width={180}
               height={60}

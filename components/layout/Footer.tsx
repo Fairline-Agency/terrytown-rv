@@ -38,7 +38,7 @@ export function Footer() {
           <div>
             <Link href="/" className="inline-block mb-4">
               <Image
-                src="/logo.png"
+                src="/company/branding/logo.png"
                 alt="Terry Town RV"
                 width={160}
                 height={53}
